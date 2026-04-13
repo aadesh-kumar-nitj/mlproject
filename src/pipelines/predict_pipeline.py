@@ -1,5 +1,6 @@
 import sys
 import pandas as pd
+import os
 from src.exception import CustomException
 from src.utils import load_object
 
@@ -8,20 +9,27 @@ class PredictPipeline:
     def __init__(self):
         pass
 
-    def predict(self,features):
+    def predict(self, features):
         try:
-            model_path=os.path.join("artifacts","model.pkl")
-            preprocessor_path=os.path.join('artifacts','preprocessor.pkl')
-            print("Before Loading")
-            model=load_object(file_path=model_path)
-            preprocessor=load_object(file_path=preprocessor_path)
-            print("After Loading")
-            data_scaled=preprocessor.transform(features)
-            preds=model.predict(data_scaled)
+            # This identifies the folder where THIS file (predict_pipeline.py) sits
+            # C:\mlproject\src\pipelines\
+            current_path = os.path.dirname(os.path.abspath(__file__))
+
+            # We go up two levels to reach C:\mlproject\ and then into artifacts
+            model_path = os.path.join(current_path, '..', '..', 'artifacts', 'model.pkl')
+            preprocessor_path = os.path.join(current_path, '..', '..', 'artifacts', 'preprocessor.pkl')
+
+            print("Loading objects...")
+            model = load_object(file_path=model_path)
+            preprocessor = load_object(file_path=preprocessor_path)
+            print("Finished Loading")
+
+            data_scaled = preprocessor.transform(features)
+            preds = model.predict(data_scaled)
             return preds
-        
+
         except Exception as e:
-            raise CustomException(e,sys)
+            raise CustomException(e, sys)
 
 
 
@@ -53,16 +61,15 @@ class CustomData:
         try:
             custom_data_input_dict = {
                 "gender": [self.gender],
-                "race_ethnicity": [self.race_ethnicity],
-                "parental_level_of_education": [self.parental_level_of_education],
+                "race/ethnicity": [self.race_ethnicity], # Changed from race_ethnicity
+                "parental level of education": [self.parental_level_of_education], # Changed from parental_level_of_education
                 "lunch": [self.lunch],
-                "test_preparation_course": [self.test_preparation_course],
-                "reading_score": [self.reading_score],
-                "writing_score": [self.writing_score],
+                "test preparation course": [self.test_preparation_course], # Changed from test_preparation_course
+                "reading score": [self.reading_score], # Changed from reading_score
+                "writing score": [self.writing_score], # Changed from writing_score
             }
 
             return pd.DataFrame(custom_data_input_dict)
 
         except Exception as e:
             raise CustomException(e, sys)
-
